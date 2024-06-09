@@ -2,6 +2,7 @@ import {
   S3Client,
   GetObjectCommand,
   PutObjectCommand,
+  DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import sharp from "sharp";
 
@@ -40,6 +41,13 @@ export const handler = async (event, context) => {
     const image = await Body.transformToByteArray();
     // resize image
     const outputBuffer = await sharp(image).resize(THUMBNAIL_WIDTH, THUMBNAIL_WIDTH, "cover").toBuffer();
+
+    await S3.send(
+      new DeleteObjectCommand({
+        Bucket: DEST_BUCKET,
+        Key: srcKey,
+      })
+    )
 
     // store new image in the destination bucket
     await S3.send(
